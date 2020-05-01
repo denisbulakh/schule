@@ -1,0 +1,280 @@
+<html>
+<head>
+    <title>Plus-Minus Aufgaben</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        input {
+            font-size:120%;
+            padding:10px;
+            margin:5px;
+            text-align:center;
+        }
+        button {
+            padding:10px;
+            margin:5px;
+            font-size:120%
+        }
+        div#title-container {
+            width:100%;
+            display:block;
+        }
+        div#title-container span {
+            width:40%;
+            float:left;
+            border:1px solid lightgrey;
+            text-align:left;
+            display:inline-block;
+            margin:5px;
+            padding:5px;
+        }
+        div#main-container {
+            clear:left;
+            width:100%;
+            display:block;
+        }
+        div#form-container {
+            text-align:left;
+        }
+        div.task {
+            width:49%;
+            float:left;
+            display:block;
+            padding-top:40px;
+            padding-bottom:40px;
+        }
+        span {
+            width:40px;
+            display:inline-block;
+            text-align:center;
+            font-size:150%;
+        }
+        span.num {
+            width:60px;
+            text-align:left;
+            color:lightgreen;
+        }
+        span.answer {
+            font-weight:bold;
+            border-bottom:1px solid grey;
+        }
+        span.answer var {
+            opacity:0;
+        }
+        span.answer.visible var {
+            opacity:100;
+        }
+        div.button {
+            text-align:center;
+        }
+    </style>
+    <script language="javascript">
+        var generateTitle = function() {
+            var title = document.createElement('div');
+
+            var name = document.createElement('span');
+            name.appendChild(document.createTextNode('Name:'));
+            name.className = 'name';
+
+            var date = document.createElement('span');
+            date.appendChild(document.createTextNode('Datum:'));
+            date.className = 'date';
+
+            title.appendChild(name);
+            title.appendChild(date);
+
+            return title;
+        };
+
+        var generateTasks = function(count, maxAddendum, maxSum) {
+            var maxCount = 1000;
+            count = Math.min(count, maxCount);
+
+            var tasks = [];
+
+            for (var i=0; i < count; i++) {
+                tasks.push(createTaskElement(i, maxAddendum, maxSum));
+            }
+
+            return tasks;
+        };
+
+        var generateForm = function(count) {
+            var container = document.getElementById('form-container');
+
+            var form = document.createElement('form');
+
+            var input = document.createElement('input');
+            input.setAttribute('name', 'count');
+            input.setAttribute('id', 'count');
+            input.value = count;
+
+            var submit = document.createElement('button');
+            submit.setAttribute('type', 'submit');
+            submit.appendChild(document.createTextNode('Generieren!'));
+
+            var results = document.createElement('button');
+            results.onclick = switchAnswers;
+            results.appendChild(document.createTextNode('Hinweise'));
+
+            var print = document.createElement('button');
+            print.onclick = pagePrint;
+            print.appendChild(document.createTextNode('Aufgaben drucken'));
+
+            var printAnswers = document.createElement('button');
+            printAnswers.onclick = pagePrintAnswers;
+            printAnswers.appendChild(document.createTextNode('Antworten drucken'));
+
+            var tasksActions = document.createElement('div');
+            tasksActions.appendChild(results);
+            tasksActions.appendChild(print);
+            tasksActions.appendChild(printAnswers);
+
+            form.appendChild(input);
+            form.appendChild(submit);
+            form.appendChild(tasksActions);
+
+            form.method = 'GET';
+
+            return form;
+        };
+
+        var getUrlParameter = function(name, defaultValue) {
+            var value = defaultValue;
+            var urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has(name)) {
+                value = parseInt(urlParams.get(name));
+            }
+
+            return value;
+        };
+
+        var createTaskElement = function(i, maxAddendum, maxSum) {
+            var task = document.createElement('div');
+            task.className = 'task';
+            var num = document.createElement('span');
+            num.className = "num";
+            num.appendChild(document.createTextNode((i+1) + '.'));
+            task.appendChild(num);
+
+            var addendum1 = Math.floor((Math.random() * maxAddendum) + 1);
+            var resultValue = Math.floor((Math.random() * maxSum) + 1);
+            var addendum2 = resultValue - addendum1;
+            var sign = '+';
+            if (addendum2 < 0) {
+                sign = '-';
+                addendum2 = Math.abs(addendum2);
+            }
+
+            var addendumContainers = [];
+
+            addendumContainers[1] = createAddendumContainer(addendum1);
+            task.appendChild(addendumContainers[1]);
+
+            task.appendChild(createTextSpan(sign));
+
+            addendumContainers[2] = createAddendumContainer(addendum2);
+            task.appendChild(addendumContainers[2]);
+
+            task.appendChild(createTextSpan('='));
+
+            addendumContainers[3] = createAddendumContainer(resultValue);
+            task.appendChild(addendumContainers[3]);
+
+            var question = Math.floor((Math.random() * 3) + 1);
+            addendumContainers[question].classList.add('answer');
+
+            return task;
+        };
+
+        var createTextSpan = function(content) {
+            var element = document.createElement('span');
+            element.appendChild(document.createTextNode(content));
+
+            return element;
+        };
+
+        var createAddendumContainer = function(addendum) {
+            var element = document.createElement('span');
+            var value = document.createElement('var');
+            value.appendChild(document.createTextNode(addendum));
+            element.appendChild(value);
+
+            return element;
+        };
+
+        var switchAnswers = function(event) {
+            event.preventDefault();
+            showAnswers(3000);
+        };
+
+        var pagePrint = function(event) {
+            event.preventDefault();
+            hideAnswers();
+            hideForm(1000);
+            window.print();
+        };
+
+        var pagePrintAnswers = function(event) {
+            event.preventDefault();
+            showAnswers(1000);
+            hideForm(1000);
+            window.print();
+        };
+
+        var hideForm = function(timeout) {
+            document.getElementById('form-container').style.opacity = '0';
+            if (typeof timeout !== 'undefined' && timeout > 0) {
+                window.setTimeout(showForm, timeout);
+            }
+        };
+
+        var getAnswersElements = function() {
+            return document.querySelectorAll('span.answer');
+        };
+
+        var showAnswers = function(timeout) {
+            getAnswersElements().forEach(function(answer) {
+                answer.classList.add('visible');
+            });
+
+            if (typeof timeout !== 'undefined' && timeout > 0) {
+                window.setTimeout(hideAnswers, timeout);
+            }
+        };
+
+        var hideAnswers = function() {
+            getAnswersElements().forEach(function(answer) {
+                answer.classList.remove('visible');
+            });
+        };
+
+        var showForm = function() {
+            document.getElementById('form-container').style.opacity = '100';
+        };
+
+        var init = function() {
+            var count = getUrlParameter('count', 10);
+            var maxAddendum = getUrlParameter('maxaddendum', 100);
+            var maxSum = getUrlParameter('maxSum', 100);
+
+            var title = generateTitle();
+            document.getElementById('title-container').appendChild(title);
+
+            var tasks = generateTasks(count, maxAddendum, maxSum);
+            tasks.forEach(function(task) {
+                document.getElementById('main-container').appendChild(task);
+            });
+
+            var form = generateForm(tasks.length);
+            document.getElementById('form-container').appendChild(form);
+        };
+    </script>
+</head>
+<body id="body" onload="init()">
+    <div id="title-container"></div>
+    <div id="main-container"></div>
+    <div id="form-container"></div>
+</body>
+</html>
