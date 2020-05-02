@@ -21,13 +21,19 @@
             display:block;
         }
         div#title-container span {
-            width:40%;
+            width:45%;
             float:left;
             border:1px solid lightgrey;
             text-align:left;
             display:inline-block;
             margin:5px;
             padding:5px;
+        }
+        div#title-container span input {
+            border:0px;
+            font-size:100%;
+            color:darkblue;
+            width:50%;
         }
         div#main-container {
             clear:left;
@@ -36,6 +42,7 @@
         }
         div#form-container {
             text-align:left;
+            clear:left;
         }
         div.task {
             width:49%;
@@ -70,7 +77,7 @@
         }
     </style>
     <script language="javascript">
-        var generateTitle = function() {
+        var generateTitle = function(nameValue, dateValue) {
             var title = document.createElement('div');
 
             var name = document.createElement('span');
@@ -80,6 +87,14 @@
             var date = document.createElement('span');
             date.appendChild(document.createTextNode('Datum:'));
             date.className = 'date';
+
+            var inputName = document.createElement('input');
+            inputName.value = nameValue;
+            name.appendChild(inputName);
+
+            var inputDate = document.createElement('input');
+            inputDate.value  = dateValue;
+            date.appendChild(inputDate);
 
             title.appendChild(name);
             title.appendChild(date);
@@ -100,15 +115,28 @@
             return tasks;
         };
 
-        var generateForm = function(count) {
+        var generateForm = function(count, nameValue, dateValue) {
             var container = document.getElementById('form-container');
 
             var form = document.createElement('form');
 
-            var input = document.createElement('input');
-            input.setAttribute('name', 'count');
-            input.setAttribute('id', 'count');
-            input.value = count;
+            var countInput = document.createElement('input');
+            countInput.setAttribute('name', 'count');
+            countInput.setAttribute('id', 'count');
+            countInput.setAttribute('placeholder', 'Aufgabenzahl');
+            countInput.value = count;
+
+            var nameInput = document.createElement('input');
+            nameInput.setAttribute('name', 'name');
+            nameInput.setAttribute('id', 'kid-name');
+            nameInput.setAttribute('placeholder', 'Name (Optional)');
+            nameInput.value = nameValue;
+
+            var dateInput = document.createElement('input');
+            dateInput.setAttribute('name', 'date');
+            dateInput.setAttribute('id', 'date-input');
+            dateInput.setAttribute('placeholder', 'Datum (Optional)');
+            dateInput.value = dateValue;
 
             var submit = document.createElement('button');
             submit.setAttribute('type', 'submit');
@@ -131,7 +159,9 @@
             tasksActions.appendChild(print);
             tasksActions.appendChild(printAnswers);
 
-            form.appendChild(input);
+            form.appendChild(countInput);
+            form.appendChild(nameInput);
+            form.appendChild(dateInput);
             form.appendChild(submit);
             form.appendChild(tasksActions);
 
@@ -144,7 +174,7 @@
             var value = defaultValue;
             var urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has(name)) {
-                value = parseInt(urlParams.get(name));
+                value = urlParams.get(name);
             }
 
             return value;
@@ -258,8 +288,11 @@
             var count = getUrlParameter('count', 10);
             var maxAddendum = getUrlParameter('maxaddendum', 100);
             var maxSum = getUrlParameter('maxSum', 100);
+            var nameValue = getUrlParameter('name', '');
+            var dateValue = getUrlParameter('date', new Date().toLocaleDateString());
+            var dateInputValue = getUrlParameter('date', '');
 
-            var title = generateTitle();
+            var title = generateTitle(nameValue, dateValue);
             document.getElementById('title-container').appendChild(title);
 
             var tasks = generateTasks(count, maxAddendum, maxSum);
@@ -267,7 +300,7 @@
                 document.getElementById('main-container').appendChild(task);
             });
 
-            var form = generateForm(tasks.length);
+            var form = generateForm(tasks.length, nameValue, dateInputValue);
             document.getElementById('form-container').appendChild(form);
         };
     </script>
